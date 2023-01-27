@@ -36,3 +36,10 @@ SELECT ccp.ID FROM Bill b, Cart_contains_Product ccp
 /* همه ی فروشنده های یک آیتم */
 SELECT pr.Name, pr.ID, pt.Name FROM Product pt, Provider pr, Product_has_Provider php 
      WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID;
+
+
+/* قدیمی ترین عضو باشگاه مشتریان */
+SELECT ID, First_name, Last_name, MIN(Join_date) FROM CUSTOMER;
+
+/* جدیدترین عضو باشگاه مشتریان */
+SELECT ID, First_name, Last_name, MAX(Join_date) FROM CUSTOMER;
