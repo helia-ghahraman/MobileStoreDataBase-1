@@ -5,6 +5,9 @@ SELECT First_name, Last_name FROM Customer ORDER BY Last_name ASC;
 /* highest total price of a bill*/
 SELECT ID, Total_price, MAX(Total_price) FROM Bill;
 
+/* list of orders */
+SELECT Product_ID FROM Cart_contains_Product;
+
 /* the customer who has the highest balance */
 SELECT c.First_name, c.Last_name, w.MAX(Balance) FROM wallet w, Customer c, Profile p
      WHERE p.Username = w.Profile_Username and p.Customer_ID = c.ID;
@@ -23,3 +26,13 @@ SELECT c.First_name, c.Last_name FROM Bill b, Customer c
 SELECT p.Name, b.Cart_Customer_ID FROM Product p, Bill b, Cart_contains_Product ccp
      WHERE p.ID = ccp.Product_ID and ccp.Cart_ID = b.Cart_ID and b.Cart_Customer_ID = 1
      ORDER BY b.Date DESC LIMIT 2;
+
+/* پرفروش ترین محصولات ماه */
+SELECT ccp.ID FROM Bill b, Cart_contains_Product ccp 
+     WHERE b.Date between '2021-03-01' and '2021-03-31'
+     GROUP BY ccp.ID
+     ORDER BY count(ccp.ID) DESC LIMIT 3;
+
+/* همه ی فروشنده های یک آیتم */
+SELECT pr.Name, pr.ID, pt.Name FROM Product pt, Provider pr, Product_has_Provider php 
+     WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID;
