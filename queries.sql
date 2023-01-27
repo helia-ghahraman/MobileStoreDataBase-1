@@ -43,3 +43,8 @@ SELECT ID, First_name, Last_name, MIN(Join_date) FROM CUSTOMER;
 
 /* جدیدترین عضو باشگاه مشتریان */
 SELECT ID, First_name, Last_name, MAX(Join_date) FROM CUSTOMER;
+
+/* میزان فروش محصولات در یک ماه */
+SELECT p.ID, p.Name, SUM(p.Price) total "
+                       "FROM Product p, Cart c, Cart_contains_Product ccp "
+                       f"WHERE p.ID = ccp.Product_ID and c.ID = ccp.Cart_ID and p.ID = {ID};
