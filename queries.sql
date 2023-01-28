@@ -58,6 +58,29 @@ SELECT p.ID, p.Name, SUM(p.Price) total "
                        "FROM Product p, Cart c, Cart_contains_Product ccp "
                        f"WHERE p.ID = ccp.Product_ID and c.ID = ccp.Cart_ID and p.ID = {ID};
 
+/* انبار دارای بیشترین محصول*/
+SELECT *, MAX(Amount) FROM Stockroom;
+
+/* سه کاربر برتر هفته*/
+SELECT c.First_name, c.Last_name FROM Bill b, Customer c 
+     WHERE b.Date between '2021-03-24' and '2021-03-31' and 
+          c.ID = b.Cart_Customer_ID 
+     GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3;
+
+/* سه کاربر برتر ماه*/
+SELECT c.First_name, c.Last_name FROM Bill b, Customer c 
+     WHERE b.Date between '2021-03-01' and '2021-03-31' and 
+          c.ID = b.Cart_Customer_ID 
+     GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3;
+
+/*تعداد فروش محصولات در یک ماه */
+SELECT count(ccp.Product_ID) FROM Cart_contains_Product ccp, Bill b, Product p
+     WHERE b.Date between '2021-03-01' and '2021-03-31' and p.ID = ccp.Product_ID and b.Cart_ID = ccp.Cart_ID;
+
+/* پیشنهاد‌های ویژه*/
+SELECT * FROM Product WHERE Discount > 15;
+
+
 /* ارزان فروش ترین فروشنده ی یک آیتم */
 SELECT pr.Name, pr.ID, pt.Name, MIN(Price) FROM Product pt, Provider pr, Product_has_Provider php 
      WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID;
