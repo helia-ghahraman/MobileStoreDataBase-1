@@ -104,7 +104,6 @@ class loginPage(QWidget):
                 print("Error while connecting to MySQL", e)
                 self.login_sign_up_label.setText("Error while connecting to MySQL")
 
-
     def sign_up(self):
         global connection
         for user in users:
@@ -123,6 +122,10 @@ class loginPage(QWidget):
                 connection.commit()
                 cursor.close()
                 connection.close()
+                self.username.clear()
+                self.password.clear()
+                with open('users.json', 'w') as writer:
+                    writer.write(json.dumps(users))
                 self.login_sign_up_label.setText("User created successfully")
             except Error as e:
                 print("Error while connecting to MySQL", e)
