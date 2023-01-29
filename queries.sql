@@ -88,3 +88,27 @@ SELECT pr.Name, pr.ID, pt.Name, MIN(Price) FROM Product pt, Provider pr, Product
 /* مشتری‌هایی که در یک شهر هستند */
 SELECT DISTINCT c1.First_name, c1.Last_name FROM Customer c1, Customer c2 WHERE c1.City = c2.City and not (c1.First_name = c2.First_name) ;
 
+/* ordering customer's last name alphabetically...*/
+SELECT First_name, Last_name FROM Customer ORDER BY Last_name ASC;
+
+/* most expensive product...*/
+SELECT Name, MAX(Price) FROM product;
+
+/* cheapest product...*/
+SELECT Name, MIN(Price) from product;
+
+/* list of products...*/
+SELECT ID, Name FROM Product;
+
+/* همه ی فروشنده های یک آیتم...*/
+SELECT pr.Name, pr.ID, pt.Name FROM Product pt, Provider pr, Product_has_Provider php 
+     WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID;
+
+/* پرفروش ترین محصولات ماه...*/
+SELECT ccp.ID FROM Bill b, Cart_contains_Product ccp 
+     WHERE b.Date between '2021-03-01' and '2021-03-31'
+     GROUP BY ccp.ID
+     ORDER BY count(ccp.ID) DESC LIMIT 3;
+
+/* میانگین فروش فروشگاه در یک ماه...*/
+SELECT avg(b.Total_price) FROM Bill b WHERE b.Date between '2021-03-01' and '2021-03-31';
