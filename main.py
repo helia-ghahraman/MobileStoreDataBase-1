@@ -1,9 +1,13 @@
 import sys
+import json
+import mysql.connector
 from PyQt5 import QtWidgets
-from mysql.connector import MySQLConnection
+from mysql.connector import Error, MySQLConnection
 from PyQt5.QtGui import QPalette, QLinearGradient, QColor, QBrush, QFont
 from PyQt5.QtWidgets import (QApplication, QWidget, QPushButton, QGridLayout, QPlainTextEdit, QLineEdit, QLabel)
 
+with open('users.json') as reader:
+    users = json.load(reader)
 
 gradient = QLinearGradient(0, 0, 0, 400)
 gradient.setColorAt(0.8, QColor("#73C8A9"))
@@ -80,13 +84,49 @@ class loginPage(QWidget):
 
     def login(self):
         global connection
-        print("login")
-        widget.setCurrentIndex(1)
+        global widget
+        username = self.username.text()
+        password = self.password.text()
+        if not users.get(username):
+            self.login_sign_up_label.setText("User not found!")
+        if users.get(username) != password:
+            self.login_sign_up_label.setText("Wrong password!")
+        else:
+            try:
+                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user=username, password=password)
+                db_Info = connection.get_server_info()
+                print("Connected to MySQL Server version ", db_Info)
+                if connection.is_connected():
+                    self.username.clear()
+                    self.password.clear()
+                    widget.setCurrentIndex(1)
+            except Error as e:
+                print("Error while connecting to MySQL", e)
+                self.login_sign_up_label.setText("Error while connecting to MySQL")
+
 
     def sign_up(self):
         global connection
-        global widget
-        print("signup")
+        for user in users:
+            self.login_sign_up_user_list.appendPlainText(user + "\n")
+        username = self.username.text()
+        password = self.password.text()
+        if users.get(username):
+            self.login_sign_up_label.setText("Username already exist!")
+        else:
+            users[username] = password
+            try:
+                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user='root', password=users.get('root'))
+                cursor = connection.cursor()
+                cursor.execute(f"CREATE USER IF NOT EXISTS '{username}'@'127.0.0.1' IDENTIFIED BY '{password}'")
+                cursor.execute(f"GRANT SELECT ON *.* TO '{username}'@'127.0.0.1'")
+                connection.commit()
+                cursor.close()
+                connection.close()
+                self.login_sign_up_label.setText("User created successfully")
+            except Error as e:
+                print("Error while connecting to MySQL", e)
+                self.login_sign_up_label.setText("Error while connecting to MySQL")
 
 
 class queryPage(QWidget):
