@@ -17,8 +17,11 @@ p.setBrush(QPalette.Window, QBrush(gradient))
 my_font = QFont('Bahnschrift Light', 15)
 style_sheet_buttons = "QPushButton { background-color:#00b894;color:white;border-color:white;} " \
                       "QPushButton::hover { background-color:#00cec9;} QPushButton::pressed { background-color:#0984e3;}"
+style_sheet_button = "QPushButton {background-color:#b2bec3;} QPushButton::hover { background-color:#636e72;} QPushButton::pressed { background-color:#2d3436;}"
 style_sheet_plain_text = "QPlainTextEdit {background-color:#636e72;color:white}"
-"QPushButton {background-color:#b2bec3;} QPushButton::hover { background-color:#636e72;} QPushButton::pressed { background-color:#2d3436;}"
+buttons_text = ['Products', 'Users', 'Orders', 'Three best users of week', 'Three best users of month',
+                'Best seller items of week', 'Best seller items of month', 'Special Offers', 'Seller of an item', 'Cheapest seller',
+                'Two last order of user', 'Sellers of a city', 'Customers of a city', 'Product sell amount in month']
 default_queries_text = ["SELECT Name FROM Product ORDER BY Name ASC",
                         "SELECT First_name, Last_name FROM Customer ORDER BY Last_name ASC",
                         "SELECT distinct ccp.Product_ID FROM Cart_contains_Product ccp,Cart c WHERE c.Customer_ID=# and c.ID = ccp.Cart_ID",
@@ -96,8 +99,7 @@ class loginPage(QWidget):
 
         self.setLayout(self.login_sign_up_layout)
 
-        # -----------------------------                                   BUTTON FUNCTIONS                             -------------------------- #
-
+    # -----------------------------                                   BUTTON FUNCTIONS                             -------------------------- #
     def login(self):
         global connection
         global widget
@@ -226,10 +228,44 @@ class queryPage(QWidget):
         widget.setCurrentIndex(0)
 
     def query_send(self):
-        pass
+        global connection
+        try:
+            query = self.query_box.toPlainText()
+            cursor = connection.cursor()
+            cursor.execute(query)
+            if ("INSERT".lower() or "UPDATE".lower()) in query.lower():
+                connection.commit()
+            if "SELECT".lower() in query.lower():
+                result = cursor.fetchall()
+                self.result_box.setPlainText(cursor.column_names + "\n")
+                for i in result:
+                    self.result_box.appendPlainText(i + "\n")
+        except Error as e:
+            self.result_box.setPlainText("Problem")
+            print("Error: ", e)
 
     def default_queries(self, index):
-        pass
+        global connection
+        try:
+            cursor = connection.cursor()
+            query = default_queries_text[index]
+            if index == 2 and self.user_id.text() != "":
+                query.replace('#', self.user_id.text())
+
+            elif (index == 8 or index == 9 or index == 10) and self.product_id.text() != "":
+                query.replace('#', self.product_id.text())
+
+            elif index == 2 or index == 9 or index == 9 or index == 11:
+                self.result_box.setPlainText("Enter needed user or product id")
+            else:
+                cursor.execute(query)
+                result = cursor.fetchall()
+                self.result_box.setPlainText(cursor.column_names + "\n")
+                for i in result:
+                    self.result_box.appendPlainText(i + "\n")
+        except Error as e:
+            self.result_box.setPlainText("Problem")
+            print("Error: ", e)
 
 
 connection: MySQLConnection
