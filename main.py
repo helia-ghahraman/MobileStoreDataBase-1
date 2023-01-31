@@ -18,6 +18,22 @@ my_font = QFont('Bahnschrift Light', 15)
 style_sheet_buttons = "QPushButton { background-color:#00b894;color:white;border-color:white;} " \
                       "QPushButton::hover { background-color:#00cec9;} QPushButton::pressed { background-color:#0984e3;}"
 style_sheet_plain_text = "QPlainTextEdit {background-color:#636e72;color:white}"
+"QPushButton {background-color:#b2bec3;} QPushButton::hover { background-color:#636e72;} QPushButton::pressed { background-color:#2d3436;}"
+default_queries_text = ["SELECT Name FROM Product ORDER BY Name ASC",
+                        "SELECT First_name, Last_name FROM Customer ORDER BY Last_name ASC",
+                        "SELECT distinct ccp.Product_ID FROM Cart_contains_Product ccp,Cart c WHERE c.Customer_ID=# and c.ID = ccp.Cart_ID",
+                        "SELECT c.First_name, c.Last_name FROM Bill b, Customer c WHERE b.Date between '2021-03-24' and '2021-03-31' and c.ID = b.Cart_Customer_ID GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3",
+                        "SELECT c.First_name, c.Last_name FROM Bill b, Customer c WHERE b.Date between '2021-03-01' and '2021-03-31' and c.ID = b.Cart_Customer_ID GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3",
+                        "SELECT p.Name FROM Cart c, Product p, Bill b, Cart_contains_Product ccp WHERE ccp.Product_ID = p.ID and b.Cart_ID = c.ID and b.Date between '2021-03-24' and '2021-03-31' GROUP BY ccp.Product_ID ORDER BY count(ccp.Product_ID) DESC LIMIT 3",
+                        "SELECT p.Name FROM Cart c, Product p, Bill b, Cart_contains_Product ccp WHERE ccp.Product_ID = p.ID and b.Cart_ID = c.ID and b.Date between '2021-03-01' and '2021-03-31' GROUP BY ccp.Product_ID ORDER BY count(ccp.Product_ID) DESC LIMIT 3",
+                        "SELECT * FROM Product WHERE Discount > 15",
+                        "SELECT pr.Name, pr.ID, pt.Name FROM Product pt, Provider pr, Product_has_Provider php WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID and pt.ID = #",
+                        "SELECT pr.Name, pr.ID, pt.Name, MIN(Price) FROM Product pt, Provider pr, Product_has_Provider php WHERE pt.ID = php.Product_ID and pr.ID = php.Provider_ID and pt.ID = #",
+                        "SELECT p.Name, b.Cart_Customer_ID FROM Product p, Bill b, Cart_contains_Product ccp WHERE p.ID = ccp.Product_ID and ccp.Cart_ID = b.Cart_ID and b.Cart_Customer_ID = # ORDER BY b.Date DESC LIMIT 2",
+                        "SELECT DISTINCT p1.Name, p1.ID, p1.City FROM Provider p1, Provider p2 WHERE p1.City = p2.City and not (p1.ID = p2.ID) ORDER BY p1.City",
+                        "SELECT DISTINCT c1.First_name, c1.Last_name FROM Customer c1, Customer c2 WHERE c1.City = c2.City and not (c1.First_name = c2.First_name)",
+                        "SELECT p.ID, p.Name, SUM(p.Price) total FROM Product p, Cart c, Cart_contains_Product ccp WHERE p.ID = ccp.Product_ID and c.ID = ccp.Cart_ID and p.ID = 8"
+                        ]
 
 
 class loginPage(QWidget):
@@ -135,6 +151,85 @@ class loginPage(QWidget):
 class queryPage(QWidget):
     def __init__(self):
         super().__init__()
+        self.layout = QGridLayout()
+        self.buttons = []
+        for i in range(14):
+            self.buttons.append(QPushButton(buttons_text[i]))
+            self.buttons[i].clicked.connect(lambda state, x=i: self.default_queries(x))
+
+        self.user_id = QLineEdit()
+        self.user_id.setPlaceholderText("User ID")
+
+        self.product_id = QLineEdit()
+        self.product_id.setPlaceholderText("Product ID")
+
+        logout_button = QPushButton("logout")
+        logout_button.clicked.connect(self.logout)
+
+        self.result_box = QPlainTextEdit()
+        self.result_box.setReadOnly(True)
+        self.result_box.setPlaceholderText('Result')
+
+        self.query_box = QPlainTextEdit()
+        self.query_box.setPlaceholderText('Enter your query')
+
+        query_button = QPushButton("Send Query")
+        query_button.clicked.connect(self.query_send)
+
+        self.layout.setHorizontalSpacing(50)
+        self.layout.setVerticalSpacing(20)
+        self.layout.setColumnMinimumWidth(0, int(self.width() * 0.3))
+        self.layout.setColumnMinimumWidth(1, int(self.width() * 0.7))
+
+        for i in range(14):
+            self.buttons[i].setFont(my_font)
+            self.buttons[i].setMinimumHeight(35)
+            self.layout.addWidget(self.buttons[i], i, 0)
+            self.buttons[i].setStyleSheet(style_sheet_buttons)
+
+        self.user_id.setFont(my_font)
+        self.layout.addWidget(self.user_id, 14, 0)
+        self.user_id.setStyleSheet(style_sheet_plain_text)
+
+        self.product_id.setFont(my_font)
+        self.layout.addWidget(self.product_id, 15, 0)
+        self.product_id.setStyleSheet(style_sheet_plain_text)
+
+        logout_button.setFont(my_font)
+        logout_button.setMinimumHeight(35)
+        self.layout.addWidget(logout_button, 16, 0)
+        logout_button.setStyleSheet(style_sheet_buttons)
+
+        self.result_box.setFont(my_font)
+        self.layout.addWidget(self.result_box, 0, 1, 8, 2)
+        self.result_box.setStyleSheet(style_sheet_plain_text)
+
+        self.query_box.setFont(my_font)
+        self.layout.addWidget(self.query_box, 8, 1, 11, 2)
+        self.query_box.setStyleSheet(style_sheet_plain_text)
+
+        query_button.setFont(my_font)
+        query_button.setMinimumHeight(35)
+        self.layout.addWidget(query_button, 14, 1, 15, 2)
+        query_button.setStyleSheet(style_sheet_button)
+
+        self.setLayout(self.layout)
+
+    def logout(self):
+        global connection
+        global widget
+        self.user_id.clear()
+        self.product_id.clear()
+        self.result_box.clear()
+        self.query_box.clear()
+        connection.close()
+        widget.setCurrentIndex(0)
+
+    def query_send(self):
+        pass
+
+    def default_queries(self, index):
+        pass
 
 
 connection: MySQLConnection
