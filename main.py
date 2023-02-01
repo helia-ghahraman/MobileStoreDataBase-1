@@ -153,6 +153,7 @@ class loginPage(QWidget):
 class queryPage(QWidget):
     def __init__(self):
         super().__init__()
+        # -----------------------------                                      QUERY PAGE                             ------------------------- #
         self.layout = QGridLayout()
         self.buttons = []
         for i in range(14):
@@ -178,6 +179,7 @@ class queryPage(QWidget):
         query_button = QPushButton("Send Query")
         query_button.clicked.connect(self.query_send)
 
+        # -----------------------------                              STYLING QUERY PAGE                             ------------------------- #
         self.layout.setHorizontalSpacing(50)
         self.layout.setVerticalSpacing(20)
         self.layout.setColumnMinimumWidth(0, int(self.width() * 0.3))
@@ -215,8 +217,11 @@ class queryPage(QWidget):
         self.layout.addWidget(query_button, 14, 1, 15, 2)
         query_button.setStyleSheet(style_sheet_button)
 
+        # ----------------------------------------------------------------------------------------------------------------------------------- #
+
         self.setLayout(self.layout)
 
+    # -----------------------------                                   BUTTON FUNCTIONS                             -------------------------- #
     def logout(self):
         global connection
         global widget
