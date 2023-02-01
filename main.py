@@ -125,7 +125,7 @@ class loginPage(QWidget):
     def sign_up(self):
         global connection
         for user in users:
-            self.login_sign_up_user_list.appendPlainText(user + "\n")
+            self.login_sign_up_user_list.appendPlainText(f"{user}\n")
         username = self.username.text()
         password = self.password.text()
         if users.get(username):
@@ -242,9 +242,10 @@ class queryPage(QWidget):
                 connection.commit()
             if "SELECT".lower() in query.lower():
                 result = cursor.fetchall()
-                self.result_box.setPlainText(cursor.column_names + "\n")
+                self.result_box.setPlainText(f"{cursor.column_names}\n")
                 for i in result:
-                    self.result_box.appendPlainText(i + "\n")
+                    self.result_box.appendPlainText(f"{i}\n")
+
         except Error as e:
             self.result_box.setPlainText("Problem")
             print("Error: ", e)
@@ -253,7 +254,9 @@ class queryPage(QWidget):
         global connection
         try:
             cursor = connection.cursor()
+            print(cursor)
             query = default_queries_text[index]
+            print(query)
             if index == 2 and self.user_id.text() != "":
                 query.replace('#', self.user_id.text())
 
@@ -265,9 +268,10 @@ class queryPage(QWidget):
             else:
                 cursor.execute(query)
                 result = cursor.fetchall()
-                self.result_box.setPlainText(cursor.column_names + "\n")
+                print(result)
+                self.result_box.setPlainText(f"{cursor.column_names}\n")
                 for i in result:
-                    self.result_box.appendPlainText(i + "\n")
+                    self.result_box.appendPlainText(f"{i}\n")
         except Error as e:
             self.result_box.setPlainText("Problem")
             print("Error: ", e)
