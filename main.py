@@ -20,11 +20,12 @@ style_sheet_buttons = "QPushButton { background-color:#00b894;color:white;border
 style_sheet_button = "QPushButton {background-color:#b2bec3;} QPushButton::hover { background-color:#636e72;} QPushButton::pressed { background-color:#2d3436;}"
 style_sheet_plain_text = "QPlainTextEdit {background-color:#636e72;color:white}"
 buttons_text = ['Products', 'Users', 'Orders', 'Three best users of week', 'Three best users of month',
-                'Best seller items of week', 'Best seller items of month', 'Special Offers', 'Seller of an item', 'Cheapest seller',
+                'Best seller items of week', 'Best seller items of month', 'Special Offers', 'Seller of an item',
+                'Cheapest seller',
                 'Two last order of user', 'Sellers of a city', 'Customers of a city', 'Product sell amount in month']
 default_queries_text = ["SELECT Name FROM Product ORDER BY Name ASC",
                         "SELECT First_name, Last_name FROM Customer ORDER BY Last_name ASC",
-                        "SELECT distinct ccp.Product_ID FROM Cart_contains_Product ccp,Cart c WHERE c.Customer_ID=# and c.ID = ccp.Cart_ID",
+                        "SELECT distinct ccp.Product_ID FROM Cart_contains_Product ccp,Cart c WHERE c.Customer_ID= # and c.ID = ccp.Cart_ID",
                         "SELECT c.First_name, c.Last_name FROM Bill b, Customer c WHERE b.Date between '2021-03-24' and '2021-03-31' and c.ID = b.Cart_Customer_ID GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3",
                         "SELECT c.First_name, c.Last_name FROM Bill b, Customer c WHERE b.Date between '2021-03-01' and '2021-03-31' and c.ID = b.Cart_Customer_ID GROUP BY b.Cart_Customer_ID ORDER BY sum(Total_price) DESC LIMIT 3",
                         "SELECT p.Name FROM Cart c, Product p, Bill b, Cart_contains_Product ccp WHERE ccp.Product_ID = p.ID and b.Cart_ID = c.ID and b.Date between '2021-03-24' and '2021-03-31' GROUP BY ccp.Product_ID ORDER BY count(ccp.Product_ID) DESC LIMIT 3",
@@ -111,7 +112,8 @@ class loginPage(QWidget):
             self.login_sign_up_label.setText("Wrong password!")
         else:
             try:
-                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user=username, password=password)
+                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user=username,
+                                                     password=password)
                 db_Info = connection.get_server_info()
                 print("Connected to MySQL Server version ", db_Info)
                 if connection.is_connected():
@@ -133,7 +135,8 @@ class loginPage(QWidget):
         else:
             users[username] = password
             try:
-                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user='root', password=users.get('root'))
+                connection = mysql.connector.connect(host='127.0.0.1', database='mobilestore', user='root',
+                                                     password=users.get('root'))
                 cursor = connection.cursor()
                 cursor.execute(f"CREATE USER IF NOT EXISTS '{username}'@'127.0.0.1' IDENTIFIED BY '{password}'")
                 cursor.execute(f"GRANT SELECT ON *.* TO '{username}'@'127.0.0.1'")
@@ -257,21 +260,23 @@ class queryPage(QWidget):
             print(cursor)
             query = default_queries_text[index]
             print(query)
-            if index == 2 and self.user_id.text() != "":
-                query.replace('#', self.user_id.text())
+            if (index == 2 or index == 10) and self.user_id.text() == "":
+                self.result_box.setPlainText("Enter needed user id")
 
-            elif (index == 8 or index == 9 or index == 10) and self.product_id.text() != "":
-                query.replace('#', self.product_id.text())
+            elif (index == 8 or index == 9) and self.product_id.text() == "":
+                self.result_box.setPlainText("Enter needed product id")
 
-            elif index == 2 or index == 9 or index == 9 or index == 11:
-                self.result_box.setPlainText("Enter needed user or product id")
-            else:
-                cursor.execute(query)
-                result = cursor.fetchall()
-                print(result)
-                self.result_box.setPlainText(f"{cursor.column_names}\n")
-                for i in result:
-                    self.result_box.appendPlainText(f"{i}\n")
+            elif index == 2 or index == 10 and self.user_id.text() != "":
+                # print(self.product_id.text())
+                query = query.replace("#", self.user_id.text())
+            elif index == 8 or index == 9 and self.product_id.text():
+                query = query.replace("#", self.product_id.text())
+            cursor.execute(query)
+            result = cursor.fetchall()
+            print(result)
+            self.result_box.setPlainText(f"{cursor.column_names}\n")
+            for i in result:
+                self.result_box.appendPlainText(f"{i}\n")
         except Error as e:
             self.result_box.setPlainText("Problem")
             print("Error: ", e)
